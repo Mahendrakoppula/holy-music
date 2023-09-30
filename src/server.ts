@@ -1,5 +1,5 @@
 import app from '@/app';
-import { logger } from '@/utils/logger';
+import { logger } from '@/utils/color-logger';
 import { MONGODB_URI, PORT } from '@config';
 import connection from '@/databases';
 import validateEnv from '@/utils/validateEnv';
@@ -26,8 +26,8 @@ routes.forEach((route) => {
 
 // LISTEN PORT
 app.listen(PORT, () => {
-  logger.info(`·•· ·•· ·•· ·•· ·•· ·•· ·•· ·•· ·•·`);
-  logger.warn(`App is running on http://localhost:${PORT}`);
-  logger.info(`·•· ·•· ·•· ·•· ·•· ·•· ·•· ·•· ·•·`);
+  logger('success')(`·•· ·•· ·•· ·•· ·•· ·•· ·•· ·•· ·•·`); 
+  logger('warning')(`App is running on http://localhost:${PORT}`);
+  logger('success')(`·•· ·•· ·•· ·•· ·•· ·•· ·•· ·•· ·•·`);
 });
 

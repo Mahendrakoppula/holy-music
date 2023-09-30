@@ -5,7 +5,7 @@ import express from 'express';
 import compression from 'compression';
 import cookieParser from 'cookie-parser';
 import methodOverride from 'method-override';
-import errorMiddleware from '@middlewares/error.middleware';
+// import errorMiddleware from '@middlewares/error.middleware';
 import { ORIGIN, CREDENTIALS } from '@config';
 // EXPRESS APP
 const app = express();
@@ -26,7 +26,7 @@ app.use(cookieParser());
 // app.use(morgan(LOG_FORMAT, { stream }));
 app.use(express.urlencoded({ extended: true }));
 // Error Handling
-app.use(errorMiddleware);
+// app.use(errorMiddleware);
 app.use(methodOverride('_method'));
 
 export default app;

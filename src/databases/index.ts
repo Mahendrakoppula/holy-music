@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import { logger } from '@/utils/logger';
+import { logger } from '@/utils/color-logger';
 import { DB_NAME, MONGODB_URI } from '@/config';
 const mongodb = require("mongodb");
 import { MongoClient } from "mongodb";
@@ -16,9 +16,15 @@ const videoBucket = new mongodb.GridFSBucket(client.db(), {
 const connection = async (uri: string, options?: mongoose.ConnectOptions) => {
   try {
     await mongoose.connect(uri, options);
-    logger.info(`Connected To Database`);
+    logger('success','[monogo]')(`Connected To Database`);
+    // logger('error','[monogo]')(`Connected To Database`);
+
+    logger('success',)('Red')
+    logger('warning',)('Orange')
+    logger('error',)('Red')
+
   } catch (error) {
-    logger.error(error);
+    logger('error','[monogo]')(error);
   }
 };
 
