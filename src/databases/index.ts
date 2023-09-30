@@ -18,11 +18,9 @@ const connection = async (uri: string, options?: mongoose.ConnectOptions) => {
     await mongoose.connect(uri, options);
     logger('success','[monogo]')(`Connected To Database`);
     // logger('error','[monogo]')(`Connected To Database`);
-
-    logger('success',)('Red')
-    logger('warning',)('Orange')
-    logger('error',)('Red')
-
+    // logger('success',)('Red')
+    // logger('warning',)('Orange')
+    // logger('error',)('Red')
   } catch (error) {
     logger('error','[monogo]')(error);
   }
