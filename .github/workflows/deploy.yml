@@ -10,19 +10,21 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [18.x]
+        node-version: [14.x] # Corrected node-version here
 
     steps:
-      - uses: actions/checkout@v2
-      - name: Use node js
-      - uses: actions/setup-node@v2
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Use Node.js
+        uses: actions/setup-node@v2
         with:
-          node-version: ${{ matrix.node-vserion }}
-      - name: npm install and build and start
+          node-version: ${{ matrix.node-version }} # Corrected node-version here
+
+      - name: Install dependencies and build
         run: |
           npm install
           npm run build
-          npm start
         env:
           CI: true
 
@@ -39,9 +41,7 @@ jobs:
           key: ${{ secrets.KEY }}
           port: ${{ secrets.PORT }}
           script: |
-            sudo su
             cd /
-            git pull origin master
             npm run build
             npm start
             pm2 restart all
