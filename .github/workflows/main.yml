@@ -1,0 +1,51 @@
+name: CI/CD for EC2
+
+on:
+ push:
+   branches:
+     - master
+
+jobs:
+ build:
+   runs-on: ubuntu-latest
+   strategy:
+      matrix:
+        node-version: [18.x]
+   steps:
+     - uses: actions/checkout@v2
+     - name: Use node js
+     - uses: actions/setup-node@v2
+       with:
+         node-version: ${{ matrix.node-vserion }}
+     - name: npm install and build and start
+       run: |
+        npm install
+        npm run build
+        npm start    
+      
+      env:
+        CI: true
+
+ deploy:
+  needs: [build]
+  runs-on: ubuntu-latest
+  
+  steps:
+   - name: SSH deploy
+     uses: appleboy/ssh-action@master
+     with:
+        host: ${{ secrets.HOST }}
+        username: ${{ secrets.USER }}
+        key: ${{ secrets.KEY }}
+        port: ${{ secrets.PORT }}
+        script: |
+          sudo su
+          cd /
+          npm run build
+          npm start
+          pm2 restart all
+
+
+
+
+ 
