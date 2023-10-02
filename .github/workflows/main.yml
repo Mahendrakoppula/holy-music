@@ -41,6 +41,7 @@ jobs:
         script: |
           sudo su
           cd /
+          git pull origin master
           npm run build
           npm start
           pm2 restart all
