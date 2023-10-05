@@ -2,10 +2,11 @@ import mongoose from "mongoose";
 
 const playSchema = new mongoose.Schema({
     userId: String,
-    song: String,
+    songId: String,
+    image:String,
     timestamp: Date,
    
   });
   
-  const Play = mongoose.model('play', playSchema);
+  const Play = mongoose.model('recentlyplayeds', playSchema);
   export default  Play;

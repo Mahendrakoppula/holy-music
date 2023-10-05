@@ -3,7 +3,11 @@ import mongoose from "mongoose";
 import Like from "@/models/like.model";
 import {AudioUrlBase} from "@/config/index"
 import Audio from "@/models/audio.model";
-
+import Play from "@/models/play.model";
+import Fav from "@/models/fav.model";
+  import Playlist from "@/models/playlist.model";
+  import User from "@/models/users/user.model";
+  import Artist from "@/models/users/artist.model";
 
 export const success = async (req, res) => {
   const {songname, title, artist, language, category } = req.body;
@@ -67,10 +71,9 @@ function getRandomItems(array, count) {
 // Getting Recently Played Songs
 export const getrecentlyplayedsongs = async (req, res) => {
   try {
-    const songs = await bucket
+    const songs = await Play
       .find({})
-      .sort({ "metadata.playedAt": -1 })
-      .toArray();
+      .sort({ "playedAt": -1 });
     res.status(200).json(songs);
   } catch (error) {
     console.log(error);
@@ -80,35 +83,21 @@ export const getrecentlyplayedsongs = async (req, res) => {
   }
 };
 
-const recentsongs = [];
-
+// play song with specific user and song
 export const playSong = async (req, res) => {
   try {
-    const songId = req.params.id;
-
-    if (!mongoose.Types.ObjectId.isValid(songId)) {
-      return res.status(400).json({ error: "Invalid song ID format" });
-    }
-
-    // Use findById method to directly fetch the song by ID
-    const song = await bucket
-      .find({ _id: new mongoose.Types.ObjectId(songId) })
-      .toArray();
-
-    if (song.length === 0) {
-      return res.status(404).json({ error: "Song not found" });
-    }
-
-    res.status(200).json("song played"); // Assuming song is an array, return the first song found
-
-    recentsongs.push(song);
+    const { userId, songId } = req.body;
+    console.log(userId);
+    const timestamp = new Date();
+    const song= await Audio.findById(songId)
+    const newSong = new Play({ userId, songId:song.file, image:song.image, timestamp });
+    await newSong.save();
+    res.status(200).json({ message: "Song played successfully" });
   } catch (error) {
-    console.error(error); // Log the error for debugging
-    res
-      .status(500)
-      .json({ error: "An error occurred while fetching the song." });
+    res.status(500).json({ error: "Error logging the song" });
   }
 };
+
 
 
 // Getting Song By Name (Full Song Name)
@@ -252,5 +241,125 @@ export const songByWord = async (req, res) => {
     }
   } catch (error) {
     res.status(500).json({ error: "An error occurred while fetching songs." });
+  }
+};
+
+
+
+// Perticular User with fav Song
+export const fav = async (req, res) => {
+  try {
+    const { userId, songId } = req.body;
+    // Log the fav played song
+    const timestamp = new Date();
+    const song= await Audio.findById(songId)
+    const newSong = new Fav({ userId, songId:song.file, image:song.image, timestamp });
+    await newSong.save();
+    res.status(200).json({ message: "added to fav Song" });
+  } catch (error) {
+    res.status(500).json({ error: "Error logging the song" });
+  }
+};
+
+// Retrieve a user's fav played songs
+export const favPlayed = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    // fav fav played songs for the user
+    const userfavPlayed = await Fav.find({ userId }).sort({ timestamp: -1 });
+    res.status(200).json({ userfavPlayed });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error fav recently played songs" });
+  }
+};
+
+
+
+export const addplaylist = async (req, res) => {
+  try {
+    const { userId, playlist1, playlist2, playlist3 } = req.body;
+    const timestamp = new Date();
+
+    // Check if a user with the given userId already exists in the database
+    const existingUser = await Playlist.findOne({ userId });
+
+    if (existingUser) {
+      // If the user exists, append the new songs to their existing playlists
+      existingUser.playlist1 = appendSongs(existingUser.playlist1, playlist1);
+      existingUser.playlist2 = appendSongs(existingUser.playlist2, playlist2);
+      existingUser.playlist3 = appendSongs(existingUser.playlist3, playlist3);
+      existingUser.timestamp = timestamp;
+      existingUser.playlist1.push(playlist1);
+      existingUser.playlist2.push(playlist2);
+      existingUser.playlist3.push(playlist3);
+
+      await existingUser.save();
+      res.status(200).json({ message: "Updated playlists." });
+    } else {
+      // If the user doesn't exist, create a new record
+      const newSong = new Playlist({
+        userId,
+        playlist1,
+        playlist2,
+        playlist3,
+        timestamp,
+      });
+      await newSong.save();
+      res.status(200).json({ message: "Added to playlists." });
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Error logging the song." });
+  }
+};
+
+// Helper function to append new songs to an existing playlist
+const appendSongs = (currentPlaylist, newSongs) => {
+  if (Array.isArray(currentPlaylist) && Array.isArray(newSongs)) {
+    currentPlaylist.push(...newSongs); // Use the spread operator (...) to add elements from newSongs individually
+  }
+  return currentPlaylist;
+};
+
+// Retrieve a user's playlist songs
+export const getallplaylist = async (req, res) => {
+  try {
+    const { userId } = req.params;
+    const userplaylist = await Playlist
+      .find({ userId })
+      .sort({ timestamp: -1 });
+    res.status(200).json({ userplaylist });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Error playlist added songs" });
+  }
+};
+
+
+export const follower = async (req, res) => {
+  try {
+    const { userId, artistId } = req.body;
+
+    const existingArtist = await Artist.findById(artistId);
+    const existingUser = await User.findById(userId);
+
+    if (!existingUser) {
+      res.status(404).json("No User Found");
+      return;
+    }
+    if (!existingArtist) {
+      res.status(200).json("No Artist");
+      return;
+    }
+    if (existingArtist.followers.includes(userId)) {
+      res.status(200).json("Already following");
+      return;
+    }
+    // existingArtist.followers.push(userId);
+    await existingArtist.save();
+
+    res.status(200).json("Followed");
+  } catch (error) {
+    res.status(500).json({ error: "Error" });
   }
 };
