@@ -1,36 +1,34 @@
 import multer from "multer";
 import express from "express";
-import { success, getAllSongs, songByID, songByName, songByWord, songByIDPlay,  getAllSongsPlay} from "@/controllers/audio.controller";
-import {randomsongs, getrecentlyplayedsongs, recentlyplaySong,playsong} from "@/controllers/audio.controller";
+import { success, songByName, songByWord, songByNamePlay,  getAllSongsPlay} from "@/controllers/audio.controller";
+import {randomsongs, getrecentlyplayedsongs, playSong, songByIDPlay, likesongs, Trendingsongs} from "@/controllers/audio.controller";
 import {audio } from "@/models/audio.model"
 const router = express.Router();
 
-// const upload = multer({ storage: songStorage }); //folder
+
 const uploadaudio = multer({ storage: audio }); //db
 
 
-// router.post('/upload',[upload.single("file")],suc);
-
-router.post("/audioupload", [uploadaudio.single("file")] ,success);
-
-router.get('/getall',getAllSongs )
-
-router.get('/songs/:id',songByID)
-
+router.post("/audioupload",  [uploadaudio.fields([{ name: 'file', maxCount: 1 }, { name: 'image', maxCount: 1 }])] ,success);
+//1)post completed
 router.get('/random',randomsongs)
-
+//2)get completed
+router.get('/trendingsongs',Trendingsongs)
+//3)get completed
+router.put('/like', likesongs)
+//4)put completed
+router.get('/playsong/:id',playSong)
+//5)get completed
 router.get('/song/:filename',songByName)
-
+//6)get completed
 router.get('/songword/:filename',songByWord)
-
+//7)get completed
 router.get('/recentlyplayedsongs',getrecentlyplayedsongs)
-
+//8)get completed
+router.get('/songByNamePlay/:filename',songByNamePlay)
+//9)get completed
 router.get('/songsplay/:id',songByIDPlay)
-
-router.get('/getallplay',getAllSongsPlay )
-
-router.get('/playsong',playsong)
-router.get('/api/recentlyplayedsongs', recentlyplaySong);
-
-
+//10)get completed
+router.get('/getall',getAllSongsPlay )
+// 11)get completed
 export default router;

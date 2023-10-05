@@ -7,7 +7,7 @@ import { MongoClient } from "mongodb";
 // const dbName = 'app';
 const client = new MongoClient(MONGODB_URI);
 const db = client.db(DB_NAME);
-const bucket = new mongodb.GridFSBucket(db, { bucketName: "songs" });
+const bucket = new mongodb.GridFSBucket(db, { bucketName: "audio" });
 
 const videoBucket = new mongodb.GridFSBucket(client.db(), {
   bucketName: "videos",
