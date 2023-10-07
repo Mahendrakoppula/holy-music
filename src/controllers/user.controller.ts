@@ -7,6 +7,7 @@ import CoffeeError from '@/utils/custom-error';
 import toIND from '@/utils/to-ind';
 import { NextFunction, Request, Response } from 'express';
 import Play from '@/models/play.model';
+import Audio from '@/models/audio.model';
 
 type P = {
   rq: Request;
@@ -23,7 +24,7 @@ let userRecentlyPlayed=undefined;
 
 export const getAllUsers = async (req: P['rq'], res: P['rs']) => {
   try {
-    const user = await User.find();
+    const user = await User.find({});
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json(error);
@@ -51,7 +52,7 @@ export const getUserById = async (req: P['rq'], res: P['rs']) => {
  */
 export const deleteUserById = async (req: P['rq'], res: P['rs']) => {
   try {
-    const user = await User.deleteOne({ _id: req.params.user_id });
+    const user = await User.deleteOne({ phone: req.params.phone });
     res.status(200).json(user);
   } catch (error) {
     res.status(500).json(error);
@@ -275,18 +276,17 @@ export const signIn = async (req: P['rq'], res: P['rs']) => {
 
 
 
-export const play =  async (req, res) => {
+export const play = async (req, res) => {
   try {
-    const { userId, song } = req.body;
-
-    // Log the recently played song
+    const { userId, songId } = req.body;
+    console.log(userId);
     const timestamp = new Date();
-    const newSong = new Play({ userId, song, timestamp });
+    const song= await Audio.findById(songId)
+    const newSong = new Play({ userId, songId:song.file, image:song.image, timestamp });
     await newSong.save();
-
-    res.status(200).json({ message: 'Song played and logged successfully' });
+    res.status(200).json({ message: "Song played successfully" });
   } catch (error) {
-    res.status(500).json({ error: 'Error logging the song' });
+    res.status(500).json({ error: "Error logging the song" });
   }
 };
 

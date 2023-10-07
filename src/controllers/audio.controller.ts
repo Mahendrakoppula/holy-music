@@ -1,29 +1,29 @@
 import { bucket } from "@/databases/index";
 import mongoose from "mongoose";
 import Like from "@/models/like.model";
-import {AudioUrlBase} from "@/config/index"
+import { AudioUrlBase } from "@/config/index"
 import Audio from "@/models/audio.model";
 import Play from "@/models/play.model";
 import Fav from "@/models/fav.model";
-  import Playlist from "@/models/playlist.model";
-  import User from "@/models/users/user.model";
-  import Artist from "@/models/users/artist.model";
+import Playlist from "@/models/playlist.model";
+import User from "@/models/users/user.model";
+import Artist from "@/models/users/artist.model";
 import { response } from "express";
 
 export const success = async (req, res) => {
-  const {songname, title, artist, language, category, lyrics } = req.body;
-  const file =AudioUrlBase+ "audio/songByNamePlay/" + req.files['file'][0].filename; // Assuming 'file' is the name attribute in your form
-  const image = AudioUrlBase+ "audio/songByNamePlay/" + req.files['image'][0].filename;
+  const { songname, title, artist, language, category, lyrics } = req.body;
+  const file = AudioUrlBase + "audio/songByNamePlay/" + req.files['file'][0].filename; // Assuming 'file' is the name attribute in your form
+  const image = AudioUrlBase + "audio/songByNamePlay/" + req.files['image'][0].filename;
   // const lyrics = AudioUrlBase+ "audio/songByNamePlay/" + req.body;
   console.log(req.files); // Array
-  try{
+  try {
     const audio = Audio.create({
-      songname,title, artist, language, category, file, image, lyrics
+      songname, title, artist, language, category, file, image, lyrics
     });
     (await audio).save();
     return res.status(200).json("Details uploaded successfully");
-       
-  }catch(error){
+
+  } catch (error) {
     return res.status(400).json({ error: "Details not uploaded." });
   }
 };
@@ -94,8 +94,8 @@ export const playSong = async (req, res) => {
     const { userId, songId } = req.body;
     console.log(userId);
     const timestamp = new Date();
-    const song= await Audio.findById(songId)
-    const newSong = new Play({ userId, songId:song.file, image:song.image, timestamp });
+    const song = await Audio.findById(songId)
+    const newSong = new Play({ userId, songId: song.file, image: song.image, timestamp });
     await newSong.save();
     res.status(200).json({ message: "Song played successfully" });
   } catch (error) {
@@ -106,8 +106,8 @@ export const playSong = async (req, res) => {
 //get lyrics
 export const lyricById = async (req, res) => {
   try {
-    const  id  = req.params.id; // Access songId from req.params
-  console.log(id);
+    const id = req.params.id; // Access songId from req.params
+    console.log(id);
     // Find the song by ID in the database
     const song = await Audio.findById(id); // Use songId as the argument
     console.log('Found song:', song);
@@ -118,7 +118,7 @@ export const lyricById = async (req, res) => {
 
     // If the song has lyrics stored in the database, return them
     if (song.lyrics) {
-      return res.status(200).json({ name:song.file,img:song.image, lyrics: song.lyrics });
+      return res.status(200).json({ name: song.file, img: song.image, lyrics: song.lyrics });
     }
   } catch (error) {
     console.error('Error:', error.message);
@@ -152,7 +152,7 @@ export const songByName = async (req, res) => {
 
 export const getAllSongsPlay = async (req, res) => {
   try {
-    const songs =await Audio.find({});
+    const songs = await Audio.find({});
     res.status(200).json(songs)
   } catch (error) {
     console.error(error);
@@ -352,7 +352,7 @@ export const fav = async (req, res) => {
     const song = await Audio.findById(songId);
     const newSong = new Fav({ userId, songId, image: song.image, timestamp });
     await newSong.save();
-    
+
     return res.status(200).json({ message: "Added to favorites" });
   } catch (error) {
     return res.status(500).json({ error: "Error logging the song" });

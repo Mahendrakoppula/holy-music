@@ -7,13 +7,9 @@ const router = Router();
  */
 router.get('/artist', artist.getAllartists);
 /**
- * Get artist by ID
+  * Update artist by ID
  */
-router.get('/artist/:artist_id', artist.getartistById);
-/**
- * Update artist by ID
- */
-router.get('/artist/:artist_id', artist.getartistById);
+router.get('/artist/:name', artist.getartistByName);
 /**
  * Delet artist by ID
  */
@@ -50,6 +46,6 @@ router.post('/artist/logout', artist.logOut);
 
 router.post('/play', artist.play)
 
-router.get('/recentlyPlayed/:artistId', artist.recentlyPlayed)
+// router.get('/recentlyPlayed/:artistId', artist.recentlyPlayed)
 
 export default router;

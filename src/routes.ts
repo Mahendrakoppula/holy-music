@@ -4,6 +4,7 @@ import artistRoutes from '@/routes/auth/artist.route';
 import googleAuthRoutes from '@routes/auth/google.route';
 import facebookAuthRoutes from '@routes/auth/facebook.route';
 import audioRoutes from '@/routes/audio.route';
+import adminRoutes from '@/routes/admin.route';
 
 
 const routes = [
@@ -23,6 +24,11 @@ const routes = [
     path: '/audio',
     func: audioRoutes,
   },
+{
+  path: '/admin',
+  func: adminRoutes,
+}
+
   // {
   //   path: '/auth/google',
   //   func: googleAuthRoutes,

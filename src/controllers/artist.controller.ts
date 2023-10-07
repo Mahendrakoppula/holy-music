@@ -7,6 +7,7 @@ import CoffeeError from '@/utils/custom-error';
 import toIND from '@/utils/to-ind';
 import { NextFunction, Request, Response } from 'express';
 import Play from '@/models/play.model';
+import { bucket } from '@/databases';
 
 type P = {
   rq: Request;
@@ -35,12 +36,16 @@ export const getAllartists = async (req: P['rq'], res: P['rs']) => {
  * @param res
  * @param next
  */
-export const getartistById = async (req: P['rq'], res: P['rs']) => {
+export const getartistByName = async (req: P['rq'], res: P['rs']) => {
   try {
-    const artist = await Artist.findById({ _id: req.params.artist_id });
+    const name = req.params;
+    const artist = await Artist.find( name);
+    console.log(artist)
     res.status(200).json(artist);
+
   } catch (error) {
-    res.status(500).json(error);
+
+    res.status(500).json("user not found");
   }
 };
 /**
@@ -79,7 +84,7 @@ export const signUp = async (req: P['rq'], res: P['rs'], next: P['n']) => {
       name,
       phone,
       password,
-     
+
     });
     await cookieToken<typeof artist>(artist, res);
   } catch (error) {
@@ -109,7 +114,7 @@ export const confirmOTP = async (req: P['rq'], res: P['rs'], next: P['n']) => {
       );
 
       artist.save();
-      res.status(200).json(artist);   
+      res.status(200).json(artist);
     }
   } catch (error) {
     res.status(500).json(error);
@@ -137,15 +142,15 @@ export const signIn = async (req: P['rq'], res: P['rs'], next: P['n']) => {
     return next(new Error('Not Registered artist'));
   }
   await cookieToken(artist, res);
-  
+
   // Retrieve recently played songs for the artist
-  const artistId = artist._id; 
+  const artistId = artist._id;
   const artistRecentlyPlayed = await Play.find({ artistId }).sort({ timestamp: -1 });
   res.status(200).json({ artist, recentlyPlayed: artistRecentlyPlayed });
 
 };
 
-export const play =  async (req, res) => {
+export const play = async (req, res) => {
   try {
     const { artistId, song } = req.body;
 
@@ -161,19 +166,19 @@ export const play =  async (req, res) => {
 };
 
 // Retrieve a artist's recently played songs
-export const recentlyPlayed = async (req, res) => {
-  try {
-    const { artistId } = req.params;
+// export const recentlyPlayed = async (req, res) => {
+//   try {
+//     const { artistId } = req.params;
 
-    // Retrieve recently played songs for the artist
-    const artistRecentlyPlayed = await Play.find({ artistId }).sort({ timestamp: -1 });
+//     // Retrieve recently played songs for the artist
+//     const artistRecentlyPlayed = await Play.find({ artistId }).sort({ timestamp: -1 });
 
-    res.status(200).json({ artistRecentlyPlayed });
-  } catch (error) {
-    console.error(error); 
-    res.status(500).json({ error: 'Error retrieving recently played songs' });
-  }
-};
+//     res.status(200).json({ artistRecentlyPlayed });
+//   } catch (error) {
+//     console.error(error);
+//     res.status(500).json({ error: 'Error retrieving recently played songs' });
+//   }
+// };
 
 /**
  * Log Out artist
