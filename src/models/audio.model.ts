@@ -30,7 +30,7 @@ export const audio = new GridFsStorage({
         filePath: file.filename,
         bucketName: "audio",
       };
-      if (file.size > 10 * 1024 * 1024) {
+      if (file.size > 5 * 1024 * 1024) {
         reject(new Error("File size should be less than 10MB."));
       } else {
         resolve(fileInfo);
@@ -46,7 +46,8 @@ const songSchema = new mongoose.Schema({
   language: String,
   category: String,
   file: String,
-  image:String
+  image:String,
+  lyrics:String,
 });
 
 const Audio = mongoose.model('audio', songSchema); // 'Song' is the model name

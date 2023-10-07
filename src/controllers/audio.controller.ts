@@ -8,15 +8,17 @@ import Fav from "@/models/fav.model";
   import Playlist from "@/models/playlist.model";
   import User from "@/models/users/user.model";
   import Artist from "@/models/users/artist.model";
+import { response } from "express";
 
 export const success = async (req, res) => {
-  const {songname, title, artist, language, category } = req.body;
+  const {songname, title, artist, language, category, lyrics } = req.body;
   const file =AudioUrlBase+ "audio/songByNamePlay/" + req.files['file'][0].filename; // Assuming 'file' is the name attribute in your form
   const image = AudioUrlBase+ "audio/songByNamePlay/" + req.files['image'][0].filename;
+  // const lyrics = AudioUrlBase+ "audio/songByNamePlay/" + req.body;
   console.log(req.files); // Array
   try{
     const audio = Audio.create({
-      songname,title, artist, language, category, file, image
+      songname,title, artist, language, category, file, image, lyrics
     });
     (await audio).save();
     return res.status(200).json("Details uploaded successfully");
@@ -25,6 +27,9 @@ export const success = async (req, res) => {
     return res.status(400).json({ error: "Details not uploaded." });
   }
 };
+
+
+
 
 
 //  Get Id By Song With Play Song
@@ -98,7 +103,28 @@ export const playSong = async (req, res) => {
   }
 };
 
+//get lyrics
+export const lyricById = async (req, res) => {
+  try {
+    const  id  = req.params.id; // Access songId from req.params
+  console.log(id);
+    // Find the song by ID in the database
+    const song = await Audio.findById(id); // Use songId as the argument
+    console.log('Found song:', song);
 
+    if (!song) {
+      return res.status(500).json({ message: 'Song not found' });
+    }
+
+    // If the song has lyrics stored in the database, return them
+    if (song.lyrics) {
+      return res.status(200).json({ name:song.file,img:song.image, lyrics: song.lyrics });
+    }
+  } catch (error) {
+    console.error('Error:', error.message);
+    return res.status(500).json({ error: 'Internal server error' });
+  }
+};
 
 // Getting Song By Name (Full Song Name)
 export const songByName = async (req, res) => {
@@ -136,9 +162,57 @@ export const getAllSongsPlay = async (req, res) => {
   }
 };
 
+
+
+// export const likesongs = async (req, res) => {
+//   try {
+//     const { songId, userId } = req.body;
+
+//     // Find the Like document for the given songId
+//     const existing = await Like.findOne({ songId });
+
+//     if (existing) {
+//       // Check if the user has already liked the song
+//       const userIndex = existing.userId.indexOf(userId);
+
+//       if (userIndex !== -1) {
+//         // Remove the userId from the existing document's userId array
+//         existing.userId.splice(userIndex, 1);
+//         existing.likes -= 1;
+//         await existing.save();
+//         res.status(200).json({ message: "Unliked song." });
+//       } else {
+//         // Add the userId to the existing document's userId array
+//         existing.userId.push(userId);
+//         existing.likes += 1;
+//         await existing.save();
+//         res.status(200).json({ message: "Liked song." });
+//       }
+//     } else {
+//       // Create a new Like document for the song and add the user's userId
+//       const newSong = new Like({
+//         userId: [userId], // Create an array with the user's userId
+//         songId,
+//       });
+//       await newSong.save();
+//       res.status(200).json({ message: "Liked song." });
+//     }
+//   } catch (error) {
+//     res.status(500).json({ error: "Error toggling the like status." });
+//   }
+// };
+
+
 export const likesongs = async (req, res) => {
   try {
     const { songId, userId } = req.body;
+
+    // Check if the user with the provided userId exists in your database
+    const userExists = await User.exists({ _id: userId });
+
+    if (!userExists) {
+      return res.status(401).json({ message: "Please register to like a song." });
+    }
 
     // Find the Like document for the given songId
     const existing = await Like.findOne({ songId });
@@ -174,6 +248,7 @@ export const likesongs = async (req, res) => {
   }
 };
 
+//Trending songs
 export const Trendingsongs = async (req, res) => {
   try {
     const trendingSongs = await Like.find({ likes: { $gt: 2 } });
@@ -247,19 +322,43 @@ export const songByWord = async (req, res) => {
 
 
 // Perticular User with fav Song
+// export const fav = async (req, res) => {
+//   try {
+//     const { userId, songId } = req.body;
+//     // Log the fav played song
+//     const timestamp = new Date();
+//     const song= await Audio.findById(songId)
+//     const newSong = new Fav({ userId, songId:song.file, image:song.image, timestamp });
+//     await newSong.save();
+//     res.status(200).json({ message: "added to fav Song" });
+//   } catch (error) {
+//     res.status(500).json({ error: "Error logging the song" });
+//   }
+// };
+
 export const fav = async (req, res) => {
   try {
     const { userId, songId } = req.body;
+
+    // Check if the song is already in the user's favorites
+    const existingFavorite = await Fav.findOne({ userId, songId });
+
+    if (existingFavorite) {
+      return res.status(200).json({ message: "Song already exists in favorites" });
+    }
+
     // Log the fav played song
     const timestamp = new Date();
-    const song= await Audio.findById(songId)
-    const newSong = new Fav({ userId, songId:song.file, image:song.image, timestamp });
+    const song = await Audio.findById(songId);
+    const newSong = new Fav({ userId, songId, image: song.image, timestamp });
     await newSong.save();
-    res.status(200).json({ message: "added to fav Song" });
+    
+    return res.status(200).json({ message: "Added to favorites" });
   } catch (error) {
-    res.status(500).json({ error: "Error logging the song" });
+    return res.status(500).json({ error: "Error logging the song" });
   }
 };
+
 
 // Retrieve a user's fav played songs
 export const favPlayed = async (req, res) => {
